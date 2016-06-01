@@ -1,0 +1,26 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+IMAGE=$1
+if [ -z "$IMAGE" ]; then
+  echo >&2 "Usage: drun [image] [command]"
+  exit 1
+fi
+shift
+
+if ! docker inspect --format="{{.Id}}" $IMAGE > /dev/null; then
+  echo "Pulling $IMAGE image..."
+  docker pull $IMAGE
+fi
+
+CURRENT_DIR=$(pwd)
+CONTAINER_HOME=$CURRENT_DIR
+
+set -x
+docker run -v $CURRENT_DIR:$CONTAINER_HOME \
+  -v ~/.ssh:$CONTAINER_HOME/.ssh:ro \
+  -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
+  -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
+  --net=host \
+  -it $IMAGE "$@"
