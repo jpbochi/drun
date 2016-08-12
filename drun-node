@@ -3,9 +3,9 @@ set -e
 set -o pipefail
 
 if hash jq 2> /dev/null; then
-  NODE_VERSION=$(jq -r '.engines.node' package.json)
+  NODE_VERSION=$(jq -r -e '.engines.node // "latest"' package.json)
 else
-  NODE_VERSION=$(python -c "import json;print json.load(open('package.json'))['engines']['node']")
+  NODE_VERSION=$(python -c "import json;print json.load(open('package.json'))['engines']['node']" 2> /dev/null || echo latest)
 fi
 
 CURRENT_DIR=$(pwd)
