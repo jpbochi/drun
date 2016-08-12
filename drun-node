@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+if hash jq 2> /dev/null; then
+  NODE_VERSION=$(jq -r '.engines.node' package.json)
+else
+  NODE_VERSION=$(python -c "import json;print json.load(open('package.json'))['engines']['node']")
+fi
+
+CURRENT_DIR=$(pwd)
+CONTAINER_HOME=$CURRENT_DIR
+
+EXTRA_OPTS="-v $HOME/.npm:$CONTAINER_HOME/.npm \
+  -v $HOME/.npmrc:$CONTAINER_HOME/.npmrc:ro \
+  -v $CONTAINER_HOME/.npm/_git-remotes" \
+  drun node:$NODE_VERSION "$@"

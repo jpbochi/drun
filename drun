@@ -14,6 +14,8 @@ if ! docker inspect --format="{{.Id}}" $IMAGE > /dev/null; then
   docker pull $IMAGE
 fi
 
+RM_OPT=${RM_OPT=--rm}
+
 TTY_OPT=""
 if [[ -t 1 ]]; then
   TTY_OPT="-it"
@@ -23,10 +25,10 @@ CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
 
 set -x
-docker run -v $CURRENT_DIR:$CONTAINER_HOME \
+docker run $RM_OPT $TTY_OPT \
+  -v $CURRENT_DIR:$CONTAINER_HOME -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
   -v ~/.ssh:$CONTAINER_HOME/.ssh:ro \
   -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
-  -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
   --net=host \
-  $TTY_OPT --rm \
+  $EXTRA_OPTS \
   $IMAGE "$@"
