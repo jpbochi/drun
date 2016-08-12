@@ -2,7 +2,9 @@
 set -e
 set -o pipefail
 
-if hash jq 2> /dev/null; then
+if [ ! -f package.json ]; then
+  NODE_VERSION='latest'
+elif hash jq 2> /dev/null; then
   NODE_VERSION=$(jq -r -e '.engines.node // "latest"' package.json)
 else
   NODE_VERSION=$(python -c "import json;print json.load(open('package.json'))['engines']['node']" 2> /dev/null || echo latest)
