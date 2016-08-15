@@ -14,6 +14,14 @@ if ! docker inspect --format="{{.Id}}" $IMAGE > /dev/null; then
   docker pull $IMAGE
 fi
 
+ENV_FILE_OPT=""
+if [ -n "$ENVREGEX" ]; then
+  ENV_FILE=$(echo ".local-env-$$")
+  env | grep '=' | awk -F '=' '{if($1 ~ /'"$ENVREGEX"'/) print}' > $ENV_FILE
+  trap "rm $ENV_FILE" EXIT
+  ENV_FILE_OPT="--env-file=$ENV_FILE"
+fi
+
 RM_OPT=${RM_OPT=--rm}
 
 TTY_OPT=""
@@ -30,5 +38,5 @@ docker run $RM_OPT $TTY_OPT \
   -v ~/.ssh:$CONTAINER_HOME/.ssh:ro \
   -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
   --net=host \
-  $EXTRA_OPTS \
+  $ENV_FILE_OPT $EXTRA_OPTS \
   $IMAGE "$@"
