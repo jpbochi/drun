@@ -2,9 +2,15 @@
 
 This tool is a simple wrapper around `docker run` which will mount the current directory. It's useful when you have that python/node/ruby/whatever script that depends on locally installed stuff. Forget pyenv and rbenv. Just get inside a docker container with `drun`.
 
-```
-$ ./install
+## Install
 
+If you use [brew](http://brew.sh/), do `brew tap jpbochi/tap && brew install drun`.
+
+If not, clone this repo and do `./install`.
+
+## Examples
+
+```
 $ drun alpine sh
 + docker run ... --net=host -it --rm alpine sh
 /Users/joao0191/src/jp/drun # ls
