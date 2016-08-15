@@ -1,3 +1,6 @@
 #!/bin/bash
-ln -fs `pwd`/drun /usr/local/bin/drun
-ln -fs `pwd`/drun-node /usr/local/bin/drun-node
+set -e
+CURRENT_DIR=$(pwd)
+set -x
+ln -fs "$CURRENT_DIR"/drun /usr/local/bin/drun
+ln -fs "$CURRENT_DIR"/drun-node /usr/local/bin/drun-node
