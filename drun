@@ -39,14 +39,14 @@ while getopts ':e:E:v:hknx' OPT; do
     E)
       ENV_REGEX="$OPTARG";;
     e)
-      LOCAL_OPTS="${LOCAL_OPTS:-} -e $OPTARG";;
+      EXTRA_OPTS="${EXTRA_OPTS:-} -e $OPTARG";;
     x)
       XTRACE="y";;
     v)
-      LOCAL_OPTS="${LOCAL_OPTS:-} -v $OPTARG";;
+      EXTRA_OPTS="${EXTRA_OPTS:-} -v $OPTARG";;
     n)
       IMAGE="node:$(node_version)"
-      LOCAL_OPTS="${LOCAL_OPTS:-} \
+      EXTRA_OPTS="${EXTRA_OPTS:-} \
         -v $HOME/.npmrc:/etc/npmrc:ro \
         -v $HOME/.npm:$CONTAINER_HOME/.npm \
         -v $CONTAINER_HOME/.npm/_git-remotes"
@@ -87,5 +87,5 @@ docker run $RM_OPT $TTY_OPT \
   -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --net=host \
-  ${ENV_FILE_OPT:-} ${LOCAL_OPTS:-} ${EXTRA_OPTS:-} \
+  ${ENV_FILE_OPT:-} ${EXTRA_OPTS:-} \
   $IMAGE "$@"
