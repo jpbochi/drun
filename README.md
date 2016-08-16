@@ -8,6 +8,13 @@ If you use [brew](http://brew.sh/), do `brew tap jpbochi/tap && brew install dru
 
 If not, clone this repo and do `./install`.
 
+## Suggested aliases
+
+```
+alias dr-node='drun -n'
+alias dr-compose='IMAGE=dduportal/docker-compose drun -e HOME="$HOME"'
+```
+
 ## Examples
 
 ```
