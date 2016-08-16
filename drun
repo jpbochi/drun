@@ -3,18 +3,48 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+usage_noexit() {
+  echo >&2 'Usage: drun [-hnx] [-e env-vars-to-forward] [image] [command]'
+  echo >&2 '  -h           Help'
+  echo >&2 '  -k           Keep container after run (i.e. does not user docker run --rm option)'
+  echo >&2 '  -n           Uses node:AUTO image, where AUTO is detected from a local package.json in any'
+  echo >&2 '  -x           Enables bash xtrace so that exact `docker run` command is displayed'
+  echo >&2 '  -e ENVREGEX  Forwards local env variables whose names match ENVREGEX to container'
+}
 usage() {
-  echo >&2 "Usage: drun [-x] [-e env-vars-to-forward] <image> [command]"
+  usage_noexit
   exit 1
 }
 
+node_version() {
+  if [ ! -f package.json ]; then
+    echo 'latest'
+  elif hash jq 2> /dev/null; then
+    echo $(jq -r -e '.engines.node // "latest"' package.json)
+  else
+    echo $(python -c "import json;print json.load(open('package.json'))['engines']['node']" 2> /dev/null || echo latest)
+  fi
+}
+
+CURRENT_DIR=$(pwd)
+CONTAINER_HOME=$CURRENT_DIR
 XTRACE=""
-while getopts ':e:x' OPT; do
+while getopts ':e:hknx' OPT; do
   case $OPT in
+    h)
+      usage_noexit && exit;;
+    k)
+      RM_OPT="";;
     e)
       ENVREGEX="$OPTARG";;
     x)
       XTRACE="y";;
+    n)
+      IMAGE="node:$(node_version)"
+      NPM_OPTS="-v $HOME/.npm:$CONTAINER_HOME/.npm \
+        -v $HOME/.npmrc:$CONTAINER_HOME/.npmrc:ro \
+        -v $CONTAINER_HOME/.npm/_git-remotes"
+      ;;
     \?)
       echo >&2 "Unknown option -$OPTARG"
       usage;;
@@ -25,11 +55,12 @@ while getopts ':e:x' OPT; do
 done
 shift $((OPTIND-1))
 
-IMAGE=$1
-[ -z "$IMAGE" ] && usage
-shift
+if [ -z "${IMAGE:-}" ]; then
+  IMAGE=$1
+  [ -z "$IMAGE" ] && usage
+  shift
+fi
 
-ENV_FILE_OPT=""
 if [ -n "${ENVREGEX:-}" ]; then
   ENV_FILE=$(echo ".local-env-$$")
   env | grep '=' | awk -F '=' '{if($1 ~ /'"$ENVREGEX"'/) print}' > $ENV_FILE
@@ -39,11 +70,9 @@ fi
 
 RM_OPT=${RM_OPT=--rm}
 
+# Enables interactive TTY if available
 TTY_OPT=""
 [[ -t 1 ]] && TTY_OPT="-it"
-
-CURRENT_DIR=$(pwd)
-CONTAINER_HOME=$CURRENT_DIR
 
 [ -n "${XTRACE:-}" ] && set -o xtrace
 docker run $RM_OPT $TTY_OPT \
@@ -51,5 +80,5 @@ docker run $RM_OPT $TTY_OPT \
   -v ~/.ssh:$CONTAINER_HOME/.ssh:ro \
   -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
   --net=host \
-  $ENV_FILE_OPT ${EXTRA_OPTS:-} \
+  ${ENV_FILE_OPT:-} $NPM_OPTS ${EXTRA_OPTS:-} \
   $IMAGE "$@"
