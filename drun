@@ -4,7 +4,7 @@ set -o pipefail
 set -o nounset
 
 usage_noexit() {
-  echo >&2 'Usage: drun [-hnx] [-e ENV_REGEX] [-v VOL_SPEC]* [image] [command]'
+  echo >&2 'Usage: drun [-hnx] [-E ENV_REGEX] [-v VOL_SPEC]* [image] [command]'
   echo >&2 '  -h           Help'
   echo >&2 '  -k           Keep container after run (i.e. does not user docker run --rm option)'
   echo >&2 '  -n           Uses node:AUTO image, where AUTO is detected from a local package.json in any'
@@ -30,21 +30,23 @@ node_version() {
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
 XTRACE=""
-while getopts ':e:v:hknx' OPT; do
+while getopts ':e:E:v:hknx' OPT; do
   case $OPT in
     h)
       usage_noexit && exit;;
     k)
       RM_OPT="";;
-    e)
+    E)
       ENV_REGEX="$OPTARG";;
+    e)
+      LOCAL_OPTS="${LOCAL_OPTS:-} -e $OPTARG";;
     x)
       XTRACE="y";;
     v)
-      VOLUME_OPS="${VOLUME_OPS:-} -v $OPTARG";;
+      LOCAL_OPTS="${LOCAL_OPTS:-} -v $OPTARG";;
     n)
       IMAGE="node:$(node_version)"
-      VOLUME_OPS="${VOLUME_OPS:-} \
+      LOCAL_OPTS="${LOCAL_OPTS:-} \
         -v $HOME/.npmrc:/etc/npmrc:ro \
         -v $HOME/.npm:$CONTAINER_HOME/.npm \
         -v $CONTAINER_HOME/.npm/_git-remotes"
@@ -85,5 +87,5 @@ docker run $RM_OPT $TTY_OPT \
   -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --net=host \
-  ${ENV_FILE_OPT:-} ${VOLUME_OPS:-} ${EXTRA_OPTS:-} \
+  ${ENV_FILE_OPT:-} ${LOCAL_OPTS:-} ${EXTRA_OPTS:-} \
   $IMAGE "$@"
