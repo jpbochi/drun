@@ -2,13 +2,15 @@
 set -e
 set -o pipefail
 
-if [ ! -f package.json ]; then
-  NODE_VERSION='latest'
-elif hash jq 2> /dev/null; then
-  NODE_VERSION=$(jq -r -e '.engines.node // "latest"' package.json)
-else
-  NODE_VERSION=$(python -c "import json;print json.load(open('package.json'))['engines']['node']" 2> /dev/null || echo latest)
-fi
+node_version() {
+  if [ ! -f package.json ]; then
+    echo 'latest'
+  elif hash jq 2> /dev/null; then
+    echo $(jq -r -e '.engines.node // "latest"' package.json)
+  else
+    echo $(python -c "import json;print json.load(open('package.json'))['engines']['node']" 2> /dev/null || echo latest)
+  fi
+}
 
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
@@ -16,4 +18,4 @@ CONTAINER_HOME=$CURRENT_DIR
 EXTRA_OPTS="-v $HOME/.npm:$CONTAINER_HOME/.npm \
   -v $HOME/.npmrc:$CONTAINER_HOME/.npmrc:ro \
   -v $CONTAINER_HOME/.npm/_git-remotes" \
-  drun node:$NODE_VERSION "$@"
+  drun node:$(node_version) "$@"

@@ -1,21 +1,36 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -o errexit
 set -o pipefail
+set -o nounset
+
+usage() {
+  echo >&2 "Usage: drun [-x] [-e env-vars-to-forward] <image> [command]"
+  exit 1
+}
+
+XTRACE=""
+while getopts ':e:x' OPT; do
+  case $OPT in
+    e)
+      ENVREGEX="$OPTARG";;
+    x)
+      XTRACE="y";;
+    \?)
+      echo >&2 "Unknown option -$OPTARG"
+      usage;;
+    :)
+      echo >&2 "Missing argument for option -$OPTARG"
+      usage;;
+  esac
+done
+shift $((OPTIND-1))
 
 IMAGE=$1
-if [ -z "$IMAGE" ]; then
-  echo >&2 "Usage: drun [image] [command]"
-  exit 1
-fi
+[ -z "$IMAGE" ] && usage
 shift
 
-if ! docker inspect --format="{{.Id}}" $IMAGE > /dev/null; then
-  echo "Pulling $IMAGE image..."
-  docker pull $IMAGE
-fi
-
 ENV_FILE_OPT=""
-if [ -n "$ENVREGEX" ]; then
+if [ -n "${ENVREGEX:-}" ]; then
   ENV_FILE=$(echo ".local-env-$$")
   env | grep '=' | awk -F '=' '{if($1 ~ /'"$ENVREGEX"'/) print}' > $ENV_FILE
   trap "rm $ENV_FILE" EXIT
@@ -25,18 +40,16 @@ fi
 RM_OPT=${RM_OPT=--rm}
 
 TTY_OPT=""
-if [[ -t 1 ]]; then
-  TTY_OPT="-it"
-fi
+[[ -t 1 ]] && TTY_OPT="-it"
 
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
 
-set -x
+[ -n "${XTRACE:-}" ] && set -o xtrace
 docker run $RM_OPT $TTY_OPT \
   -v $CURRENT_DIR:$CONTAINER_HOME -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
   -v ~/.ssh:$CONTAINER_HOME/.ssh:ro \
   -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
   --net=host \
-  $ENV_FILE_OPT $EXTRA_OPTS \
+  $ENV_FILE_OPT ${EXTRA_OPTS:-} \
   $IMAGE "$@"
