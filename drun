@@ -4,7 +4,7 @@ set -o pipefail
 set -o nounset
 
 usage_noexit() {
-  echo >&2 'Usage: drun [-hnx] [-E ENV_REGEX] [-e ENV_SPEC]* [-v VOL_SPEC]* [image] [command]'
+  echo >&2 'Usage: drun [-hnx] [-E ENV_REGEX] [-e ENV_SPEC]* [-v VOL_SPEC]* [-I image|image] [command]'
   echo >&2 '  -h           Help'
   echo >&2 '  -k           Keep container after run (i.e. does not user docker run --rm option)'
   echo >&2 '  -n           Uses node:AUTO image, where AUTO is detected from a local package.json in any'
@@ -31,20 +31,18 @@ node_version() {
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
 XTRACE=""
-while getopts ':e:E:v:hknx' OPT; do
+while getopts ':e:E:hI:knv:x' OPT; do
   case $OPT in
-    h)
-      usage_noexit && exit;;
-    k)
-      RM_OPT="";;
     E)
       ENV_REGEX="$OPTARG";;
     e)
       EXTRA_OPTS="${EXTRA_OPTS:-} -e $OPTARG";;
-    x)
-      XTRACE="y";;
-    v)
-      EXTRA_OPTS="${EXTRA_OPTS:-} -v $OPTARG";;
+    h)
+      usage_noexit && exit;;
+    I)
+      IMAGE="$OPTARG";;
+    k)
+      RM_OPT="";;
     n)
       IMAGE="node:$(node_version)"
       EXTRA_OPTS="${EXTRA_OPTS:-} \
@@ -52,6 +50,10 @@ while getopts ':e:E:v:hknx' OPT; do
         -v $HOME/.npm:$CONTAINER_HOME/.npm \
         -v $CONTAINER_HOME/.npm/_git-remotes"
       ;;
+    v)
+      EXTRA_OPTS="${EXTRA_OPTS:-} -v $OPTARG";;
+    x)
+      XTRACE="y";;
     \?)
       echo >&2 "Unknown option -$OPTARG"
       usage;;

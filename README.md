@@ -12,7 +12,7 @@ If not, clone this repo and do `./install`.
 
 ```
 alias dr-node='drun -n'
-alias dr-compose='IMAGE=dduportal/docker-compose drun -e HOME="$HOME"'
+alias dr-compose='drun -e HOME="$HOME" -I dduportal/docker-compose'
 ```
 
 ## Examples
