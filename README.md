@@ -12,17 +12,15 @@ If not, clone this repo and do `./install`.
 
 ```
 $ drun alpine sh
-+ docker run ... --net=host -it --rm alpine sh
-/Users/joao0191/src/jp/drun # ls
+/Users/jpbochi/src/jp/drun # ls
 README.md  drun       install
-/Users/joao0191/src/jp/drun # echo hello > world.txt
-/Users/joao0191/src/jp/drun #
+/Users/jpbochi/src/jp/drun # echo hello > world.txt
+/Users/jpbochi/src/jp/drun #
 
 $ ls
 README.md drun      install   world.txt
 
 $ drun alpine false
-+ docker run ... --net=host -it --rm alpine false
 
 $ echo $?
 1
@@ -31,6 +29,14 @@ $ node --version
 v5.12.0
 
 $ drun node:5.7 node --version
-+ docker run ... --net=host -it --rm node:5.7 node --version
 v5.7.1
+
+$ ARRRRR=arrrrrrrrrrr MOARRR=moar drun -e ARR alpine env
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOSTNAME=moby
+TERM=xterm
+ARRRRR=arrrrrrrrrrr
+MOARRR=moar
+HOME=/Users/jpbochi/src/jp/drun
+no_proxy=*.local, 169.254/16
 ```

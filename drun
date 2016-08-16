@@ -80,5 +80,5 @@ docker run $RM_OPT $TTY_OPT \
   -v ~/.ssh:$CONTAINER_HOME/.ssh:ro \
   -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
   --net=host \
-  ${ENV_FILE_OPT:-} $NPM_OPTS ${EXTRA_OPTS:-} \
+  ${ENV_FILE_OPT:-} ${NPM_OPTS:-} ${EXTRA_OPTS:-} \
   $IMAGE "$@"
