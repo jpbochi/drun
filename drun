@@ -4,13 +4,14 @@ set -o pipefail
 set -o nounset
 
 usage_noexit() {
-  echo >&2 'Usage: drun [-hnx] [-E ENV_REGEX] [-v VOL_SPEC]* [image] [command]'
+  echo >&2 'Usage: drun [-hnx] [-E ENV_REGEX] [-e ENV_SPEC]* [-v VOL_SPEC]* [image] [command]'
   echo >&2 '  -h           Help'
   echo >&2 '  -k           Keep container after run (i.e. does not user docker run --rm option)'
   echo >&2 '  -n           Uses node:AUTO image, where AUTO is detected from a local package.json in any'
   echo >&2 '  -x           Enables bash xtrace so that exact `docker run` command is displayed'
   echo >&2 '  -v VOL_SPEC  Adds a --volume option to `docker run`'
-  echo >&2 '  -e ENV_REGEX Forwards local env variables whose names match ENV_REGEX to container'
+  echo >&2 '  -e ENV_SPEC  Adds a --env option to `docker run`'
+  echo >&2 '  -E ENV_REGEX Forwards local env variables whose names match ENV_REGEX to container'
 }
 usage() {
   usage_noexit
