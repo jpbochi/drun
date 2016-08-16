@@ -4,12 +4,13 @@ set -o pipefail
 set -o nounset
 
 usage_noexit() {
-  echo >&2 'Usage: drun [-hnx] [-e env-vars-to-forward] [image] [command]'
+  echo >&2 'Usage: drun [-hnx] [-e ENV_REGEX] [-v VOL_SPEC]* [image] [command]'
   echo >&2 '  -h           Help'
   echo >&2 '  -k           Keep container after run (i.e. does not user docker run --rm option)'
   echo >&2 '  -n           Uses node:AUTO image, where AUTO is detected from a local package.json in any'
   echo >&2 '  -x           Enables bash xtrace so that exact `docker run` command is displayed'
-  echo >&2 '  -e ENVREGEX  Forwards local env variables whose names match ENVREGEX to container'
+  echo >&2 '  -v VOL_SPEC  Adds a --volume option to `docker run`'
+  echo >&2 '  -e ENV_REGEX Forwards local env variables whose names match ENV_REGEX to container'
 }
 usage() {
   usage_noexit
@@ -29,20 +30,23 @@ node_version() {
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
 XTRACE=""
-while getopts ':e:hknx' OPT; do
+while getopts ':e:v:hknx' OPT; do
   case $OPT in
     h)
       usage_noexit && exit;;
     k)
       RM_OPT="";;
     e)
-      ENVREGEX="$OPTARG";;
+      ENV_REGEX="$OPTARG";;
     x)
       XTRACE="y";;
+    v)
+      VOLUME_OPS="${VOLUME_OPS:-} -v $OPTARG";;
     n)
       IMAGE="node:$(node_version)"
-      NPM_OPTS="-v $HOME/.npm:$CONTAINER_HOME/.npm \
-        -v $HOME/.npmrc:$CONTAINER_HOME/.npmrc:ro \
+      VOLUME_OPS="${VOLUME_OPS:-} \
+        -v $HOME/.npmrc:/etc/npmrc:ro \
+        -v $HOME/.npm:$CONTAINER_HOME/.npm \
         -v $CONTAINER_HOME/.npm/_git-remotes"
       ;;
     \?)
@@ -61,9 +65,9 @@ if [ -z "${IMAGE:-}" ]; then
   shift
 fi
 
-if [ -n "${ENVREGEX:-}" ]; then
+if [ -n "${ENV_REGEX:-}" ]; then
   ENV_FILE=$(echo ".local-env-$$")
-  env | grep '=' | awk -F '=' '{if($1 ~ /'"$ENVREGEX"'/) print}' > $ENV_FILE
+  env | grep '=' | awk -F '=' '{if($1 ~ /'"$ENV_REGEX"'/) print}' > $ENV_FILE
   trap "rm $ENV_FILE" EXIT
   ENV_FILE_OPT="--env-file=$ENV_FILE"
 fi
@@ -79,6 +83,7 @@ docker run $RM_OPT $TTY_OPT \
   -v $CURRENT_DIR:$CONTAINER_HOME -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
   -v ~/.ssh:$CONTAINER_HOME/.ssh:ro \
   -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   --net=host \
-  ${ENV_FILE_OPT:-} ${NPM_OPTS:-} ${EXTRA_OPTS:-} \
+  ${ENV_FILE_OPT:-} ${VOLUME_OPS:-} ${EXTRA_OPTS:-} \
   $IMAGE "$@"
