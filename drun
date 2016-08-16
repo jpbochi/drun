@@ -63,7 +63,7 @@ done
 shift $((OPTIND-1))
 
 if [ -z "${IMAGE:-}" ]; then
-  IMAGE=$1
+  IMAGE="${1:-}"
   [ -z "$IMAGE" ] && usage
   shift
 fi
