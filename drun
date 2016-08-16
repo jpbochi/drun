@@ -86,8 +86,6 @@ TTY_OPT=""
 [ -n "${XTRACE:-}" ] && set -o xtrace
 docker run $RM_OPT $TTY_OPT \
   -v $CURRENT_DIR:$CONTAINER_HOME -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
-  -v ~/.ssh:$CONTAINER_HOME/.ssh:ro \
-  -v ~/.ssh/known_hosts:/root/.ssh/known_hosts:ro \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --net=host \
   ${ENV_FILE_OPT:-} ${EXTRA_OPTS:-} \
