@@ -1,0 +1,12 @@
+machine:
+  pre:
+    - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+  services:
+    - docker
+
+test:
+  override:
+    - ./drun ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04'
+    - ./drun mhart/alpine-node:5.12.0 node --version | grep 'v5.12.0'
+    - echo '{"test":"passing"}' | ./drun -x stedolan/jq '.test' | grep '"passing"'
+    - echo '{"test":"passing"}' > test.json && ./drun -x stedolan/jq '.test' test.json | grep '"passing"'
