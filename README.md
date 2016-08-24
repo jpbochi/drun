@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/jpbochi/drun.svg?style=svg)](https://circleci.com/gh/jpbochi/drun)
+
 # drun
 
 This tool is a simple wrapper around `docker run` which will mount the current directory. It's useful when you have that python/node/ruby/whatever script that depends on locally installed stuff. Forget pyenv and rbenv. Just get inside a docker container with `drun`.
