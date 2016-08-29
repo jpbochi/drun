@@ -46,7 +46,7 @@ while getopts ':e:E:hI:knv:x' OPT; do
     n)
       IMAGE="node:$(node_version)"
       EXTRA_OPTS="${EXTRA_OPTS:-} \
-        -v $HOME/.npmrc:/etc/npmrc:ro \
+        -v $HOME/.npmrc:/usr/local/etc/npmrc:ro \
         -v $HOME/.npm:$CONTAINER_HOME/.npm \
         -v $CONTAINER_HOME/.npm/_git-remotes"
       ;;
