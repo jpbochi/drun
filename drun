@@ -78,7 +78,7 @@ fi
 if [ -n "${ENV_REGEX:-}" ]; then
   ENV_FILE=$(echo ".local-env-$$")
   env | grep '=' | awk -F '=' '{if($1 ~ /'"$ENV_REGEX"'/) print}' > $ENV_FILE
-  trap "rm $ENV_FILE" EXIT
+  trap "rm -f $ENV_FILE" EXIT
   ENV_FILE_OPT="--env-file=$ENV_FILE"
 fi
 
