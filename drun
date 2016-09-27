@@ -47,12 +47,12 @@ while getopts ':e:E:hI:kNPv:x' OPT; do
       RM_OPT="";;
     N)
       IMAGE="node:$(node_version)"
-      EXTRA_OPTS="${EXTRA_OPTS:-} -v $CONTAINER_HOME/.npm/_git-remotes"
       if [ -r "$HOME/.npmrc" ]; then
         EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npmrc:/usr/etc/npmrc:ro -v $HOME/.npmrc:/usr/local/etc/npmrc:ro"
       fi
       ;;
     P)
+      EXTRA_OPTS="${EXTRA_OPTS:-} -v $CONTAINER_HOME/.npm/_git-remotes"
       EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npm:$CONTAINER_HOME/.npm"
       ;;
     v)
