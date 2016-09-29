@@ -13,7 +13,7 @@ If not, clone this repo and do `./install`.
 ## Suggested aliases
 
 ```
-alias dr-node='drun -n'
+alias dr-node='drun -N -P'
 alias dr-compose='drun -e HOME="$HOME" -I dduportal/docker-compose'
 ```
 
