@@ -85,10 +85,13 @@ fi
 MAP_CURRENT_DIR_OPT="-v $CURRENT_DIR:$CONTAINER_HOME"
 # Inception detection
 if [ -f '/proc/1/cgroup' ]; then
-  INSIDE_CONTAINER=$(grep '/docker/' -- /proc/1/cgroup | head -n1 | cut -d '/' -f 3)
-  EXTRA_OPTS="${EXTRA_OPTS:-} --volumes-from $INSIDE_CONTAINER"
-  if [ "0" != $(docker inspect --format='{{range .Mounts}}{{.Destination}}:{{end}}' ${INSIDE_CONTAINER} | grep -c ${CONTAINER_HOME}) ]; then
-    # Does not map current directory if it would overwrite volume from current container
+  CURRENT_CONTAINER=$(grep '/docker/' -- /proc/1/cgroup | head -n1 | cut -d '/' -f 3)
+  # Maps volumes from current container
+  EXTRA_OPTS="${EXTRA_OPTS:-} --volumes-from $CURRENT_CONTAINER"
+
+  # If current directory is inside any of the mounts of the current container
+  MOUNTS=$(docker inspect --format='{{range .Mounts}} -e '{{.Destination}}'{{end}}' ${CURRENT_CONTAINER})
+  if [ "0" != $(echo "${CURRENT_DIR}" | grep ${MOUNTS}) ]; then
     MAP_CURRENT_DIR_OPT=''
   fi
 fi
