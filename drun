@@ -82,6 +82,13 @@ if [ -n "${ENV_REGEX:-}" ]; then
   ENV_FILE_OPT="--env-file=$ENV_FILE"
 fi
 
+if [ -f '/proc/1/cgroup' ]; then
+  INSIDE_CONTAINER=$(grep '/docker/' -- /proc/1/cgroup | head -n1 | cut -d '/' -f 3)
+  if [ -n "${IMAGE:-}" ]; then
+    EXTRA_OPTS="${EXTRA_OPTS:-} --volumes-from $INSIDE_CONTAINER"
+  fi
+fi
+
 RM_OPT=${RM_OPT=--rm}
 
 # Enables interactive TTY if available
