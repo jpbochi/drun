@@ -82,12 +82,15 @@ if [ -n "${ENV_REGEX:-}" ]; then
   ENV_FILE_OPT="--env-file=$ENV_FILE"
 fi
 
-HOME_MAP_OPT="-v $CURRENT_DIR:$CONTAINER_HOME"
+MAP_CURRENT_DIR_OPT="-v $CURRENT_DIR:$CONTAINER_HOME"
 if [ -f '/proc/1/cgroup' ]; then
   INSIDE_CONTAINER=$(grep '/docker/' -- /proc/1/cgroup | head -n1 | cut -d '/' -f 3)
   if [ -n "${IMAGE:-}" ]; then
     EXTRA_OPTS="${EXTRA_OPTS:-} --volumes-from $INSIDE_CONTAINER"
-    HOME_MAP_OPT=''
+    if [ "0" != $(docker inspect --format='{{range .Mounts}}{{.Destination}}:{{end}}' ${INSIDE_CONTAINER} | grep -c ${CONTAINER_HOME}) ]; then
+      # Does not map current directory if it would overwrite volume from current container
+      MAP_CURRENT_DIR_OPT=''
+    fi
   fi
 fi
 
@@ -99,7 +102,7 @@ TTY_OPT="-i"
 
 [ -n "${XTRACE:-}" ] && set -o xtrace
 docker run $RM_OPT $TTY_OPT \
-  $HOME_MAP_OPT \
+  $MAP_CURRENT_DIR_OPT \
   -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --net=host \
