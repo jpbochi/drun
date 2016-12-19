@@ -82,6 +82,22 @@ if [ -n "${ENV_REGEX:-}" ]; then
   ENV_FILE_OPT="--env-file=$ENV_FILE"
 fi
 
+MAP_CURRENT_DIR_OPT="-v $CURRENT_DIR:$CONTAINER_HOME"
+# Inception detection
+if [ -f '/proc/1/cgroup' ]; then
+  CURRENT_CONTAINER=$(grep '/docker/' -- /proc/1/cgroup | head -n1 | cut -d '/' -f 3)
+  if [ -n "${CURRENT_CONTAINER}" ]; then
+    # Maps volumes from current container
+    EXTRA_OPTS="${EXTRA_OPTS:-} --volumes-from $CURRENT_CONTAINER"
+
+    # If current directory is inside any of the mounts of the current container
+    MOUNTS=$(docker inspect --format='{{range .Mounts}} -e '{{.Destination}}'{{end}}' ${CURRENT_CONTAINER})
+    if [ "0" != $(echo "${CURRENT_DIR}" | grep ${MOUNTS}) ]; then
+      MAP_CURRENT_DIR_OPT=''
+    fi
+  fi
+fi
+
 RM_OPT=${RM_OPT=--rm}
 
 # Enables interactive TTY if available
@@ -90,7 +106,8 @@ TTY_OPT="-i"
 
 [ -n "${XTRACE:-}" ] && set -o xtrace
 docker run $RM_OPT $TTY_OPT \
-  -v $CURRENT_DIR:$CONTAINER_HOME -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
+  $MAP_CURRENT_DIR_OPT \
+  -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --net=host \
   ${ENV_FILE_OPT:-} ${EXTRA_OPTS:-} \
