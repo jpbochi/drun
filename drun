@@ -14,6 +14,7 @@ usage_noexit() {
   echo >&2 '  -e ENV_SPEC  Adds a --env option to `docker run`'
   echo >&2 '  -E ENV_REGEX Forwards local env variables whose names match ENV_REGEX to container'
   echo >&2 '  -I image     Tells which docker image to use'
+  echo >&2 '  -D           Do not mount /var/run/docker.sock into the container'
 }
 usage() {
   usage_noexit
@@ -33,7 +34,7 @@ node_version() {
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
 XTRACE=""
-while getopts ':e:E:hI:kNPv:x' OPT; do
+while getopts ':e:E:hI:kNPv:xD' OPT; do
   case $OPT in
     E)
       ENV_REGEX="$OPTARG";;
@@ -59,6 +60,8 @@ while getopts ':e:E:hI:kNPv:x' OPT; do
       EXTRA_OPTS="${EXTRA_OPTS:-} -v $OPTARG";;
     x)
       XTRACE="y";;
+    D)
+      MOUNTDOCKERSOCK="n";;
     \?)
       echo >&2 "Unknown option -$OPTARG"
       usage;;
@@ -98,6 +101,11 @@ if [ -f '/proc/1/cgroup' ]; then
   fi
 fi
 
+DSOCK=/var/run/docker.sock
+if [ "${MOUNTDOCKERSOCK:-}" != 'n' -a -r "$DSOCK" -a  -w "$DSOCK" -a -S "$DSOCK" ]; then
+  EXTRA_OPTS="${EXTRA_OPTS:-} -v ${DSOCK}:${DSOCK}"
+fi
+
 RM_OPT=${RM_OPT=--rm}
 
 # Enables interactive TTY if available
@@ -108,7 +116,6 @@ TTY_OPT="-i"
 docker run $RM_OPT $TTY_OPT \
   $MAP_CURRENT_DIR_OPT \
   -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   --net=host \
   ${ENV_FILE_OPT:-} ${EXTRA_OPTS:-} \
   $IMAGE "$@"

@@ -6,6 +6,7 @@ machine:
 
 test:
   override:
+    - ./drun -x docker:1.10.0 docker version
     - ./drun ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04'
     - ./drun mhart/alpine-node:5.12.0 node --version | grep 'v5.12.0'
     - echo '{"test":"passing"}' | ./drun -x stedolan/jq '.test' | grep '"passing"'
