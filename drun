@@ -78,8 +78,9 @@ if [ -z "${IMAGE:-}" ]; then
   IMAGE="${1:-}"
   [ -z "$IMAGE" ] && usage
   shift
-elif [ "${PREFER_ALPINE:-}" == 'y' ]; then
-  IMAGE=$(echo $IMAGE | sed 's/^node:/mhart\/alpine-node-auto:/')
+fi
+if [ "${PREFER_ALPINE:-}" == 'y' ]; then
+  IMAGE=$(echo "$IMAGE" | sed 's/^node\([:]*\)/mhart\/alpine-node-auto\1/')
 fi
 
 if [ -n "${ENV_REGEX:-}" ]; then
