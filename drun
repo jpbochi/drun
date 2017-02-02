@@ -108,7 +108,9 @@ fi
 
 DSOCK=/var/run/docker.sock
 if [ "${MOUNTDOCKERSOCK:-}" != 'n' -a -r "$DSOCK" -a  -w "$DSOCK" -a -S "$DSOCK" ]; then
-  EXTRA_OPTS="${EXTRA_OPTS:-} -v ${DSOCK}:${DSOCK}"
+  if printf 'GET /_ping HTTP/1.1\nHost: daemon\n\n' | nc -U /var/run/docker.sock | head -n 1 | grep -q '200 OK'; then
+    EXTRA_OPTS="${EXTRA_OPTS:-} -v ${DSOCK}:${DSOCK}"
+  fi
 fi
 
 RM_OPT=${RM_OPT=--rm}
