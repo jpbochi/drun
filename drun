@@ -104,6 +104,8 @@ RM_OPT=${RM_OPT=--rm}
 TTY_OPT="-i"
 [ -t 0 ] && TTY_OPT="-it"
 
+printf 'GET /_ping HTTP/1.1\nHost: anything\n\n' | nc -U /var/run/docker.sock >&2
+
 [ -n "${XTRACE:-}" ] && set -o xtrace
 docker run $RM_OPT $TTY_OPT \
   $MAP_CURRENT_DIR_OPT \
