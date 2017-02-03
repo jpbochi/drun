@@ -108,7 +108,7 @@ fi
 
 DSOCK=/var/run/docker.sock
 if [ "${MOUNTDOCKERSOCK:-}" != 'n' -a -r "$DSOCK" -a  -w "$DSOCK" -a -S "$DSOCK" ]; then
-  if printf 'GET /_ping HTTP/1.1\nHost: daemon\n\n' | nc -U /var/run/docker.sock | head -n 1 | grep -q '200 OK'; then
+  if curl -sS --unix-socket /var/run/docker.sock http://docker/_ping | grep -q OK; then
     EXTRA_OPTS="${EXTRA_OPTS:-} -v ${DSOCK}:${DSOCK}"
   fi
 fi
