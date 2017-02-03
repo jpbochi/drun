@@ -79,7 +79,7 @@ if [ -z "${IMAGE:-}" ]; then
   [ -z "$IMAGE" ] && usage
   shift
 fi
-if [ "${PREFER_ALPINE:-}" == 'y' ]; then
+if [ "${PREFER_ALPINE:-}" = 'y' ]; then
   IMAGE=$(echo "$IMAGE" | sed 's/^node\([:]*\)/mhart\/alpine-node-auto\1/')
 fi
 
@@ -119,7 +119,7 @@ RM_OPT=${RM_OPT=--rm}
 TTY_OPT="-i"
 [ -t 0 ] && TTY_OPT="-it"
 
-[ "${XTRACE:-}" == 'y' ] && set -o xtrace
+[ "${XTRACE:-}" = 'y' ] && set -o xtrace
 docker run $RM_OPT $TTY_OPT \
   $MAP_CURRENT_DIR_OPT \
   -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
