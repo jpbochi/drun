@@ -4,6 +4,8 @@ machine:
     - sudo apt-get install devscripts
   services:
     - docker
+  environment:
+    RM_OPT: "" # tells drun not to --rm since CircleCI doesn't like it
 
 test:
   override:

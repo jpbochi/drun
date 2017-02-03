@@ -22,13 +22,23 @@ usage() {
   exit 1
 }
 
+node_version_jq() {
+  jq -r -e '.engines.node // "latest"' package.json
+}
+node_version_python() {
+  python -c "import json;print json.load(open('package.json')).get('engines',{}).get('node','latestpython')"
+}
+node_version_ruby() {
+  cat package.json | ruby -e 'require "json"; puts JSON[STDIN.read].fetch("engine",{}).fetch("node","lastestruby")'
+}
 node_version() {
   if [ ! -f package.json ]; then
     echo 'latest'
-  elif jq --version | grep -q jq; then
-    echo $(jq -r -e '.engines.node // "latest"' package.json)
   else
-    echo $(python -c "import json;print json.load(open('package.json'))['engines']['node']" 2> /dev/null || echo latest)
+    node_version_jq 2> /dev/null || \
+    node_version_python 2> /dev/null || \
+    node_version_ruby 2> /dev/null || \
+    (echo >&2 'drun ERR! Failed to resolve node version. Defaulting to "latest"' && echo 'latest')
   fi
 }
 
