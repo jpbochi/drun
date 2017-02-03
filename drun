@@ -9,6 +9,7 @@ usage_noexit() {
   echo >&2 '  -k           Keep container after run (i.e. does not user docker run --rm option)'
   echo >&2 '  -x           Enables bash xtrace so that exact `docker run` command is displayed'
   echo >&2 '  -N           Uses node:AUTO image, where AUTO is detected from a local package.json if any (also mounts .npmrc, if present)'
+  echo >&2 '  -A           Prefers alpine images (e.g., with -N, will use mhart/alpine-node-auto:AUTO instead)'
   echo >&2 '  -P           Mounts your ~/.npm/ into the container (Only useful with node, obviously)'
   echo >&2 '  -v VOL_SPEC  Adds a --volume option to `docker run`'
   echo >&2 '  -e ENV_SPEC  Adds a --env option to `docker run`'
@@ -33,8 +34,7 @@ node_version() {
 
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
-XTRACE=""
-while getopts ':e:E:hI:kNPv:xD' OPT; do
+while getopts ':e:E:hI:kNAPv:xD' OPT; do
   case $OPT in
     E)
       ENV_REGEX="$OPTARG";;
@@ -52,6 +52,8 @@ while getopts ':e:E:hI:kNPv:xD' OPT; do
         EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npmrc:/usr/etc/npmrc:ro -v $HOME/.npmrc:/usr/local/etc/npmrc:ro"
       fi
       ;;
+    A)
+      PREFER_ALPINE="y";;
     P)
       EXTRA_OPTS="${EXTRA_OPTS:-} -v $CONTAINER_HOME/.npm/_git-remotes"
       EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npm:$CONTAINER_HOME/.npm"
@@ -76,6 +78,9 @@ if [ -z "${IMAGE:-}" ]; then
   IMAGE="${1:-}"
   [ -z "$IMAGE" ] && usage
   shift
+fi
+if [ "${PREFER_ALPINE:-}" == 'y' ]; then
+  IMAGE=$(echo "$IMAGE" | sed 's/^node\([:]*\)/mhart\/alpine-node-auto\1/')
 fi
 
 if [ -n "${ENV_REGEX:-}" ]; then
@@ -103,7 +108,9 @@ fi
 
 DSOCK=/var/run/docker.sock
 if [ "${MOUNTDOCKERSOCK:-}" != 'n' -a -r "$DSOCK" -a  -w "$DSOCK" -a -S "$DSOCK" ]; then
-  EXTRA_OPTS="${EXTRA_OPTS:-} -v ${DSOCK}:${DSOCK}"
+  if printf 'GET /_ping HTTP/1.1\nHost: daemon\n\n' | nc -U /var/run/docker.sock | head -n 1 | grep -q '200 OK'; then
+    EXTRA_OPTS="${EXTRA_OPTS:-} -v ${DSOCK}:${DSOCK}"
+  fi
 fi
 
 RM_OPT=${RM_OPT=--rm}
@@ -112,7 +119,7 @@ RM_OPT=${RM_OPT=--rm}
 TTY_OPT="-i"
 [ -t 0 ] && TTY_OPT="-it"
 
-[ -n "${XTRACE:-}" ] && set -o xtrace
+[ "${XTRACE:-}" == 'y' ] && set -o xtrace
 docker run $RM_OPT $TTY_OPT \
   $MAP_CURRENT_DIR_OPT \
   -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
