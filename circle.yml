@@ -1,13 +1,20 @@
 machine:
   pre:
     - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+    - sudo apt-get install devscripts
   services:
     - docker
+  environment:
+    RM_OPT: "" # tells drun not to --rm since CircleCI doesn't like it
 
 test:
   override:
-    - ./drun -x docker:1.10.0 docker version
-    - ./drun ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04'
-    - ./drun mhart/alpine-node:5.12.0 node --version | grep 'v5.12.0'
-    - echo '{"test":"passing"}' | ./drun -x stedolan/jq '.test' | grep '"passing"'
-    - echo '{"test":"passing"}' > test.json && ./drun -x stedolan/jq '.test' test.json | grep '"passing"'
+    - checkbashisms -f ./drun
+    - ./drun -x ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04' # should execute command inside container
+    - ./drun -x docker:1.10.0 docker version # should bind docker.sock
+    - ./drun -x docker:1.10.0 sh -c './drun -x docker:1.10.0 true' # should do inception in 2 levels
+    - ./drun -x docker:1.10.0 sh -c './drun -x docker:1.10.0 sh -c "./drun -x docker:1.10.0 true"' # should do inception in 3 levels
+    - ./drun -x mhart/alpine-node:5.12.0 node --version | grep 'v5.12.0' # should get version of node
+    - ./drun -xNA node --version | grep 'v5.12.0' # should read version from package.json
+    - echo '{"test":"passing"}' | ./drun -x stedolan/jq '.test' | grep '"passing"' # should pipe into command inside container
+    - echo '{"test":"passing"}' > test.json && ./drun -x stedolan/jq '.test' test.json | grep '"passing"' # should mount current directory

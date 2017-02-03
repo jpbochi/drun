@@ -22,13 +22,23 @@ usage() {
   exit 1
 }
 
+node_version_jq() {
+  jq -r -e '.engines.node // "latest"' package.json
+}
+node_version_python() {
+  python -c "import json;print json.load(open('package.json')).get('engines',{}).get('node','latestpython')"
+}
+node_version_ruby() {
+  cat package.json | ruby -e 'require "json"; puts JSON[STDIN.read].fetch("engine",{}).fetch("node","lastestruby")'
+}
 node_version() {
   if [ ! -f package.json ]; then
     echo 'latest'
-  elif hash jq 2> /dev/null; then
-    echo $(jq -r -e '.engines.node // "latest"' package.json)
   else
-    echo $(python -c "import json;print json.load(open('package.json'))['engines']['node']" 2> /dev/null || echo latest)
+    node_version_jq 2> /dev/null || \
+    node_version_python 2> /dev/null || \
+    node_version_ruby 2> /dev/null || \
+    (echo >&2 'drun ERR! Failed to resolve node version. Defaulting to "latest"' && echo 'latest')
   fi
 }
 
@@ -108,7 +118,9 @@ fi
 
 DSOCK=/var/run/docker.sock
 if [ "${MOUNTDOCKERSOCK:-}" != 'n' -a -r "$DSOCK" -a  -w "$DSOCK" -a -S "$DSOCK" ]; then
-  if printf 'GET /_ping HTTP/1.1\nHost: daemon\n\n' | nc -U /var/run/docker.sock | head -n 1 | grep -q '200 OK'; then
+  if curl --help | grep -q unix-socket && curl -sS --unix-socket "$DSOCK" http://docker/_ping | grep -q OK; then
+    EXTRA_OPTS="${EXTRA_OPTS:-} -v ${DSOCK}:${DSOCK}"
+  elif nc -h 2>&1 | grep -qe '-X\b' && printf 'GET /_ping HTTP/1.1\nHost: daemon\n\n' | nc -U "$DSOCK" | head -n 1 | grep -q '200 OK'; then
     EXTRA_OPTS="${EXTRA_OPTS:-} -v ${DSOCK}:${DSOCK}"
   fi
 fi
