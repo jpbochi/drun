@@ -34,6 +34,8 @@ node_version() {
 
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
+ORIGINAL_EXTRA_OPTS=${EXTRA_OPTS:-}
+EXTRA_OPTS=''
 while getopts ':e:E:hI:kNAPv:xD' OPT; do
   case $OPT in
     E)
@@ -124,5 +126,5 @@ docker run $RM_OPT $TTY_OPT \
   $MAP_CURRENT_DIR_OPT \
   -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
   --net=host \
-  ${ENV_FILE_OPT:-} ${EXTRA_OPTS:-} \
+  ${ENV_FILE_OPT:-} ${EXTRA_OPTS} ${ORIGINAL_EXTRA_OPTS} \
   $IMAGE "$@"
