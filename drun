@@ -26,10 +26,10 @@ node_version_jq() {
   jq -r -e '.engines.node // "latest"' package.json
 }
 node_version_python() {
-  python -c "import json;print json.load(open('package.json')).get('engines',{}).get('node','latestpython')"
+  python -c "import json;print json.load(open('package.json')).get('engines',{}).get('node','latest')"
 }
 node_version_ruby() {
-  cat package.json | ruby -e 'require "json"; puts JSON[STDIN.read].fetch("engine",{}).fetch("node","lastestruby")'
+  cat package.json | ruby -e 'require "json"; puts JSON[STDIN.read].fetch("engine",{}).fetch("node","latest")'
 }
 node_version() {
   if [ ! -f package.json ]; then
