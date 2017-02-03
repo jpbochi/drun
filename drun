@@ -25,7 +25,7 @@ usage() {
 node_version() {
   if [ ! -f package.json ]; then
     echo 'latest'
-  elif hash jq 2> /dev/null; then
+  elif jq --version | grep -q jq; then
     echo $(jq -r -e '.engines.node // "latest"' package.json)
   else
     echo $(python -c "import json;print json.load(open('package.json'))['engines']['node']" 2> /dev/null || echo latest)
