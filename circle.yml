@@ -4,7 +4,7 @@ containerInfo:
   - image: docker:1.10.0
 stages:
   checkout:
-    workDir: ~/drun
+    workDir: /home/circleci/drun
     steps:
       - type: shell
         pwd: /
