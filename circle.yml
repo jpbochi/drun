@@ -3,12 +3,6 @@ executorType: docker
 containerInfo:
   - image: docker:1.10.0
 stages:
-  checkout:
-    workDir: ~/drun
-    steps:
-      - type: shell
-        command: apk -U add git
-      - type: checkout
   build:
     parallel: 3
     workDir: ~/drun
@@ -16,9 +10,10 @@ stages:
       RM_OPT: "" # tells drun not to --rm since CircleCI doesn't like it
     steps:
       - type: shell
-        command: |
-          apk -U add checkbashisms
-          checkbashisms -f ./drun
+        command: apk -U add git checkbashisms
+      - type: checkout
+      - type: shell
+        command: checkbashisms -f ./drun
       - type: shell
         command: ./drun -x ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04' # should execute command inside container
       - type: shell
