@@ -1,7 +1,7 @@
 version: 2
 executorType: docker
 containerInfo:
-  - image: docker:1.10.0
+  - image: ubuntu:14.04
 stages:
   build:
     parallel: 1
