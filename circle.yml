@@ -8,19 +8,10 @@ stages:
     steps:
       - type: shell
         pwd: /
-        command: apk -U add git
+        command: apk -U add git checkbashisms
       - type: checkout
-stages:
-  build:
-    parallel: 3
-    workDir: ~/drun
-    environment:
-      RM_OPT: "" # tells drun not to --rm since CircleCI doesn't like it
-    steps:
       - type: shell
-        command: |
-          apk -U add checkbashisms
-          checkbashisms -f ./drun
+        command: checkbashisms -f ./drun
       - type: shell
         command: ./drun -x ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04' # should execute command inside container
       - type: shell
