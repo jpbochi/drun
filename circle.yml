@@ -3,7 +3,7 @@ executorType: docker
 containerInfo:
   - image: docker:1.10.0
 stages:
-  checkout:
+  build:
     workDir: /home/circleci/drun
     environment:
       RM_OPT: "" # tells drun not to --rm since CircleCI doesn't like it
