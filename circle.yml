@@ -11,7 +11,7 @@ stages:
       - type: shell
         pwd: /
         shell: /bin/sh
-        command: apk --update add git checkbashisms
+        command: apk --update add git openssh checkbashisms
       - type: checkout
       - type: shell
         command: checkbashisms -f ./drun
