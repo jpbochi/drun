@@ -10,7 +10,8 @@ stages:
     steps:
       - type: shell
         pwd: /
-        command: apk -U add git checkbashisms
+        shell: /bin/sh
+        command: apk --update add git checkbashisms
       - type: checkout
       - type: shell
         command: checkbashisms -f ./drun
