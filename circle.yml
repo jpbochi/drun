@@ -19,7 +19,13 @@ stages:
       - type: setup-docker-engine
       - type: shell
         shell: /bin/sh
-        command: ./drun -x ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04' # should execute command inside container
+        command: docker version
+      - type: shell
+        shell: /bin/sh
+        command: ./drun -x alpine:3.5 date
+      - type: shell
+        shell: /bin/sh
+        command: ./drun -x alpine:3.5 cat /etc/issue | grep 'Alpine Linux 3.5' # should execute command inside container
       - type: shell
         shell: /bin/sh
         command: ./drun -x docker:1.10.0 docker version # should bind docker.sock
