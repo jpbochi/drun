@@ -5,6 +5,8 @@ containerInfo:
 stages:
   checkout:
     workDir: /home/circleci/drun
+    environment:
+      RM_OPT: "" # tells drun not to --rm since CircleCI doesn't like it
     steps:
       - type: shell
         pwd: /
