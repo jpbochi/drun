@@ -11,30 +11,38 @@ stages:
       - type: shell
         pwd: /
         shell: /bin/sh
-        command: ln -s /bin/sh /bin/bash
-      - type: shell
-        pwd: /
         command: apk --update add git openssh checkbashisms
       - type: checkout
       - type: shell
+        shell: /bin/sh
         command: checkbashisms -f ./drun
       - type: shell
+        shell: /bin/sh
         command: ./drun -x ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04' # should execute command inside container
       - type: shell
+        shell: /bin/sh
         command: ./drun -x docker:1.10.0 docker version # should bind docker.sock
       - type: shell
+        shell: /bin/sh
         command: ./drun -x docker:1.10.0 sh -c './drun -x docker:1.10.0 true' # should do inception in 2 levels
       - type: shell
+        shell: /bin/sh
         command: ./drun -x docker:1.10.0 sh -c './drun -x docker:1.10.0 sh -c "./drun -x docker:1.10.0 true"' # should do inception in 3 levels
       - type: shell
+        shell: /bin/sh
         command: ./drun -x mhart/alpine-node:5.12.0 node --version | grep 'v5.12.0' # should get version of node
       - type: shell
+        shell: /bin/sh
         command: ./drun -xNA node --version | grep 'v7.7.1' # should read version from package.json with mhart/alpine-node-auto image
       - type: shell
+        shell: /bin/sh
         command: ./drun -xNM slim node --version | grep 'v7.7.1' # should read version from package.json node:7.7.1-slim image
       - type: shell
+        shell: /bin/sh
         command: echo '{"test":"passing"}' | ./drun -x stedolan/jq '.test' | grep '"passing"' # should pipe into command inside container
       - type: shell
+        shell: /bin/sh
         command: echo '{"test":"passing"}' > test.json && ./drun -x stedolan/jq '.test' test.json | grep '"passing"' # should mount current directory
       - type: shell
+        shell: /bin/sh
         command: ./drun -?
