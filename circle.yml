@@ -16,6 +16,7 @@ stages:
       - type: shell
         shell: /bin/sh
         command: checkbashisms -f ./drun
+      - type: setup-docker-engine
       - type: shell
         shell: /bin/sh
         command: ./drun -x ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04' # should execute command inside container
