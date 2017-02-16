@@ -11,6 +11,9 @@ stages:
       - type: shell
         pwd: /
         shell: /bin/sh
+        command: ln -s /bin/sh /bin/bash
+      - type: shell
+        pwd: /
         command: apk --update add git openssh checkbashisms
       - type: checkout
       - type: shell
