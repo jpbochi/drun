@@ -4,12 +4,13 @@ set -o nounset
 set -o noglob
 
 usage_noexit() {
-  echo >&2 'Usage: drun [-hkxNP] [-E ENV_REGEX] [-e ENV_SPEC]* [-v VOL_SPEC]* [-I image|image] [command]'
+  echo >&2 'Usage: drun [-hkx] [-N [-A] [-P] [-M (alpine|wheezy|slim)]] [-E ENV_REGEX] [-e ENV_SPEC]* [-v VOL_SPEC]* [(-I image)|(image)] [command]'
   echo >&2 '  -h           Help'
   echo >&2 '  -k           Keep container after run (i.e. does not user docker run --rm option)'
   echo >&2 '  -x           Enables bash xtrace so that exact `docker run` command is displayed'
   echo >&2 '  -N           Uses node:AUTO image, where AUTO is detected from a local package.json if any (also mounts .npmrc, if present)'
-  echo >&2 '  -A           Prefers alpine images (e.g., with -N, will use mhart/alpine-node-auto:AUTO instead)'
+  echo >&2 '  -M ALT_IMAGE Prefers node ALT_IMAGE (can be either alpine, wheezy or slim) (e.g., with -NM slim, will resolve to node:AUTO-slim)'
+  echo >&2 '  -A           Prefers mhart/alpine-node-auto images (e.g., with -NA, will resolve to mhart/alpine-node-auto:AUTO)'
   echo >&2 '  -P           Mounts your ~/.npm/ into the container (Only useful with node, obviously)'
   echo >&2 '  -v VOL_SPEC  Adds a --volume option to `docker run`'
   echo >&2 '  -e ENV_SPEC  Adds a --env option to `docker run`'
@@ -44,7 +45,7 @@ node_version() {
 
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
-while getopts ':e:E:hI:kNAPv:xD' OPT; do
+while getopts ':e:E:hI:kNM:APv:xD' OPT; do
   case $OPT in
     E)
       ENV_REGEX="$OPTARG";;
@@ -62,6 +63,8 @@ while getopts ':e:E:hI:kNAPv:xD' OPT; do
         EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npmrc:/usr/etc/npmrc:ro -v $HOME/.npmrc:/usr/local/etc/npmrc:ro"
       fi
       ;;
+    M)
+      NODE_ALT_IMAGE="$OPTARG";;
     A)
       PREFER_ALPINE="y";;
     P)
@@ -91,6 +94,11 @@ if [ -z "${IMAGE:-}" ]; then
 fi
 if [ "${PREFER_ALPINE:-}" = 'y' ]; then
   IMAGE=$(echo "$IMAGE" | sed 's/^node\([:]*\)/mhart\/alpine-node-auto\1/')
+elif [ -n "${NODE_ALT_IMAGE:-}" ]; then
+  IMAGE=$(echo "$IMAGE" \
+    | sed 's/^node:\([0-9.]*\)$/node:\1-'"${NODE_ALT_IMAGE}"'/' \
+    | sed 's/^node:latest$/node:'"${NODE_ALT_IMAGE}"'/' \
+    | sed 's/^node$/node:'"${NODE_ALT_IMAGE}"'/')
 fi
 
 if [ -n "${ENV_REGEX:-}" ]; then
