@@ -3,24 +3,26 @@ set -o errexit
 set -o nounset
 set -o noglob
 
-usage_noexit() {
-  echo >&2 'Usage: drun [-hkx] [-N [-A] [-P] [-M (alpine|wheezy|slim)]] [-E ENV_REGEX] [-e ENV_SPEC]* [-v VOL_SPEC]* [(-I image)|(image)] [command]'
-  echo >&2 '  -h           Help'
-  echo >&2 '  -k           Keep container after run (i.e. does not user docker run --rm option)'
-  echo >&2 '  -x           Enables bash xtrace so that exact `docker run` command is displayed'
-  echo >&2 '  -N           Uses node:AUTO image, where AUTO is detected from a local package.json if any (also mounts .npmrc, if present)'
-  echo >&2 '  -M ALT_IMAGE Prefers node ALT_IMAGE (can be either alpine, wheezy or slim) (e.g., with -NM slim, will resolve to node:AUTO-slim)'
-  echo >&2 '  -A           Prefers mhart/alpine-node-auto images (e.g., with -NA, will resolve to mhart/alpine-node-auto:AUTO)'
-  echo >&2 '  -P           Mounts your ~/.npm/ into the container (Only useful with node, obviously)'
-  echo >&2 '  -v VOL_SPEC  Adds a --volume option to `docker run`'
-  echo >&2 '  -e ENV_SPEC  Adds a --env option to `docker run`'
-  echo >&2 '  -E ENV_REGEX Forwards local env variables whose names match ENV_REGEX to container'
-  echo >&2 '  -I image     Tells which docker image to use'
-  echo >&2 '  -D           Do not mount /var/run/docker.sock into the container'
+short_usage() {
+  echo >&2 'Usage: drun [options] (image|-I image) [--] [command]'
+  echo >&2 'See `drun -?` for help.'
+  exit 1
 }
 usage() {
-  usage_noexit
-  exit 1
+  echo >&2 'Usage: drun [options] (image|-I image) [--] [command]'
+  echo >&2 '  -?                        Shows this help'
+  echo >&2 '  -K                        Keep container after run (i.e. does not user docker run --rm option)'
+  echo >&2 '  -x                        Enables bash xtrace so that exact `docker run` command is displayed'
+  echo >&2 '  -N                        Uses node:AUTO image, where AUTO is detected from a local package.json if any (also mounts .npmrc, if present)'
+  echo >&2 '  -M ALT_IMAGE              Prefers node ALT_IMAGE (can be either alpine, wheezy or slim) (e.g., with -NM slim, will resolve to node:AUTO-slim)'
+  echo >&2 '  -A                        Prefers mhart/alpine-node-auto images (e.g., with -NA, will resolve to mhart/alpine-node-auto:AUTO)'
+  echo >&2 '  -P                        Mounts your ~/.npm/ into the container (Only useful with node, obviously)'
+  echo >&2 '  -E ENV_REGEX              Forwards local env variables whose names match ENV_REGEX to container'
+  echo >&2 '  -I image                  Tells which docker image to use, allowing other options to set later'
+  echo >&2 '  -D                        Do not mount /var/run/docker.sock into the container'
+  echo >&2 '  -X SOME_DOCKER_OPTION     Passes option directly to docker (e.g. `drun -X --dns=8.8.8.8` results in `docker run --dns=8.8.8.8 ...`)'
+  echo >&2 '  -a|c|e|h|l|m|p|u|v|w VAL  Work exactly like `docker run` options (e.g. `drun -e FOO=bar` results in `docker run -e FOO=bar ...`)'
+  exit 0
 }
 
 node_version_jq() {
@@ -45,17 +47,17 @@ node_version() {
 
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
-while getopts ':e:E:hI:kNM:APv:xD' OPT; do
+while getopts ':a:c:e:h:l:m:p:u:v:w:X:E:I:KNM:APxD' OPT; do
   case $OPT in
+    a|c|e|h|l|m|p|u|v|w)
+      EXTRA_OPTS="${EXTRA_OPTS:-} -${OPT} ${OPTARG}";;
+    X)
+      EXTRA_OPTS="${EXTRA_OPTS:-} ${OPTARG}";;
     E)
       ENV_REGEX="$OPTARG";;
-    e)
-      EXTRA_OPTS="${EXTRA_OPTS:-} -e $OPTARG";;
-    h)
-      usage_noexit && exit;;
     I)
       IMAGE="$OPTARG";;
-    k)
+    K)
       RM_OPT="";;
     N)
       IMAGE="node:$(node_version)"
@@ -71,18 +73,19 @@ while getopts ':e:E:hI:kNM:APv:xD' OPT; do
       EXTRA_OPTS="${EXTRA_OPTS:-} -v $CONTAINER_HOME/.npm/_git-remotes"
       EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npm:$CONTAINER_HOME/.npm"
       ;;
-    v)
-      EXTRA_OPTS="${EXTRA_OPTS:-} -v $OPTARG";;
     x)
       XTRACE="y";;
     D)
       MOUNTDOCKERSOCK="n";;
     \?)
+      if [ "$OPTARG" = '?' ]; then
+        usage
+      fi
       echo >&2 "Unknown option -$OPTARG"
-      usage;;
+      short_usage;;
     :)
       echo >&2 "Missing argument for option -$OPTARG"
-      usage;;
+      short_usage;;
   esac
 done
 shift $((OPTIND-1))

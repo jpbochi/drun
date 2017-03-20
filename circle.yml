@@ -19,3 +19,4 @@ test:
     - ./drun -xNM slim node --version | grep 'v7.7.1' # should read version from package.json node:7.7.1-slim image
     - echo '{"test":"passing"}' | ./drun -x stedolan/jq '.test' | grep '"passing"' # should pipe into command inside container
     - echo '{"test":"passing"}' > test.json && ./drun -x stedolan/jq '.test' test.json | grep '"passing"' # should mount current directory
+    - ./drun -?
