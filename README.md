@@ -14,7 +14,8 @@ If not, clone this repo and do `./install`.
 
 ```
 alias dr-node='drun -N -P'
-alias dr-compose='drun -e HOME="$HOME" -I dduportal/docker-compose'
+alias dr-compose='drun -e HOME="$HOME" -I docker/compose:1.9.0'
+alias dr-py='drun -I python:2.7'
 ```
 
 ## Examples
