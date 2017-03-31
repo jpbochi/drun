@@ -111,9 +111,10 @@ if [ -n "${ENV_REGEX:-}" ]; then
   ENV_FILE_OPT="--env-file=$ENV_FILE"
 fi
 
-MAP_CURRENT_DIR_OPT="-v $CURRENT_DIR:$CONTAINER_HOME"
+MAP_CURRENT_DIR_OPT="-v $CURRENT_DIR/:$CONTAINER_HOME/"
 # Inception detection
 if [ -f '/proc/1/cgroup' ]; then
+  cat /proc/1/cgroup
   CURRENT_CONTAINER=$(grep '/docker/' -- /proc/1/cgroup | head -n1 | cut -d '/' -f 3)
   if [ -n "${CURRENT_CONTAINER}" ] && docker inspect --format='ok' "${CURRENT_CONTAINER}" 2>&1 > /dev/null; then
     # Maps volumes from current container
@@ -135,8 +136,13 @@ if [ "${MOUNTDOCKERSOCK:-}" != 'n' -a -r "$DSOCK" -a -w "$DSOCK" -a -S "$DSOCK" 
     EXTRA_OPTS="${EXTRA_OPTS:-} -v ${DSOCK}:${DSOCK}"
   fi
 elif [ -n "${DOCKER_HOST}" ]; then
+  # ARRRGH=$(echo $DOCKER_HOST | sed 's/tcp:/https:/')
+  # echo curl -ik "$ARRRGH"/_ping
+  # curl -ik "$ARRRGH"/_ping
+  # echo '--------'
   EXTRA_OPTS="${EXTRA_OPTS:-} -e DOCKER_HOST=${DOCKER_HOST}"
-  EXTRA_OPTS="${EXTRA_OPTS:-} -e DOCKER_TLS_VERIFY=0"
+  EXTRA_OPTS="${EXTRA_OPTS:-} -e DOCKER_TLS_VERIFY=1"
+  # EXTRA_OPTS="${EXTRA_OPTS:-} -e DOCKER_CERT_PATH=${DOCKER_CERT_PATH} -v ${DOCKER_CERT_PATH}/:${DOCKER_CERT_PATH}/:ro"
 fi
 
 RM_OPT=${RM_OPT=--rm}

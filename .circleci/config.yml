@@ -1,10 +1,10 @@
 version: 2
-executorType: docker
-containerInfo:
-  - image: docker:1.10.0
 stages:
   build:
-    workDir: /home/circleci/drun
+    working_directory: /home/circleci/drun
+    machine: true
+    docker:
+      - image: docker:17.03.0
     environment:
       RM_OPT: "" # tells drun not to --rm since CircleCI doesn't like it
     steps:
@@ -19,7 +19,20 @@ stages:
       - type: setup-docker-engine
       - type: shell
         shell: /bin/sh
-        command: docker version
+        command: env
+      - type: shell
+        shell: /bin/sh
+        command: |
+          docker version
+          docker --help
+          docker info
+          docker --log-level debug ps
+          find /tmp/docker-*
+          mkdir -p /home/circleci/drun/.docker/
+          cp ${DOCKER_CERT_PATH}/*.pem /home/circleci/drun/.docker/
+          ls -lha /home/circleci/drun/.docker/
+          ./drun -x alpine:3.5 ls -lha /home/circleci/drun/
+          ./drun -x alpine:3.5 ls -lha /home/circleci/drun/.docker/
       - type: shell
         shell: /bin/sh
         command: ./drun -x alpine:3.5 date
@@ -28,7 +41,7 @@ stages:
         command: ./drun -x alpine:3.5 cat /etc/issue | grep 'Alpine Linux 3.5' # should execute command inside container
       - type: shell
         shell: /bin/sh
-        command: ./drun -x docker:1.10.0 docker version # should bind docker.sock
+        command: ./drun -x docker:17.03.0 docker version # should bind docker.sock
       - type: shell
         shell: /bin/sh
         command: ./drun -x docker:1.10.0 sh -c './drun -x docker:1.10.0 true' # should do inception in 2 levels
