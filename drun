@@ -13,7 +13,7 @@ usage() {
   echo >&2 '  -?                        Shows this help'
   echo >&2 '  -K                        Keep container after run (i.e. does not user docker run --rm option)'
   echo >&2 '  -x                        Enables bash xtrace so that exact `docker run` command is displayed'
-  echo >&2 '  -N                        Uses node:AUTO image, where AUTO is detected from a local package.json if any (also mounts .npmrc, if present)'
+  echo >&2 '  -N                        Uses node:AUTO image, where AUTO is detected from a local package.json if any (also mounts ~/.npmrc and ~/.yarnrc, if present)'
   echo >&2 '  -M ALT_IMAGE              Prefers node ALT_IMAGE (can be either alpine, wheezy or slim) (e.g., with -NM slim, will resolve to node:AUTO-slim)'
   echo >&2 '  -A                        Prefers mhart/alpine-node-auto images (e.g., with -NA, will resolve to mhart/alpine-node-auto:AUTO)'
   echo >&2 '  -P                        Mounts your ~/.npm/ into the container (Only useful with node, obviously)'
@@ -61,8 +61,15 @@ while getopts ':a:c:e:h:l:m:p:u:v:w:X:E:I:KNM:APxD' OPT; do
       RM_OPT="";;
     N)
       IMAGE="node:$(node_version)"
-      if [ -r "$HOME/.npmrc" ]; then
+      if [ -s "$HOME/.npmrc" ]; then
         EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npmrc:/usr/etc/npmrc:ro -v $HOME/.npmrc:/usr/local/etc/npmrc:ro"
+      fi
+      if [ -s "$HOME/.yarnrc" ]; then
+        EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.yarnrc:$CONTAINER_HOME/.yarnrc"
+      fi
+      if [ -s "$HOME/.npmrc" -a -s "$HOME/.yarnrc" -a ! -s .npmrc ]; then
+        # workaround for [Yarn not reading /etc/npmrc while npm does](https://github.com/yarnpkg/yarn/issues/1931)
+        EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npmrc:$CONTAINER_HOME/.npmrc:ro"
       fi
       ;;
     M)
