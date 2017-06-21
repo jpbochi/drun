@@ -156,6 +156,5 @@ TTY_OPT="-i"
 docker run $RM_OPT $TTY_OPT \
   $MAP_CURRENT_DIR_OPT \
   -e HOME=$CONTAINER_HOME -w $CONTAINER_HOME \
-  --net=host \
   ${ENV_FILE_OPT:-} ${EXTRA_OPTS:-} \
   $IMAGE "$@"
