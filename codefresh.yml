@@ -1,0 +1,7 @@
+version: '1.0'
+steps:
+  all:
+    image: docker:stable
+    commands:
+      - "true"
+    fail_fast: false
