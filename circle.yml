@@ -1,7 +1,6 @@
 machine:
   pre:
     - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
-    - sudo apt-get install devscripts
   services:
     - docker
   environment:
@@ -9,7 +8,6 @@ machine:
 
 test:
   override:
-    - checkbashisms -f ./drun
     - ./drun -x ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04' # should execute command inside container
     - ./drun -x docker:1.10.0 docker version # should bind docker.sock
     - ./drun -x docker:1.10.0 sh -c './drun -x docker:1.10.0 true' # should do inception in 2 levels
@@ -22,4 +20,5 @@ test:
     - echo '{"engines":{"node":"7.7.1"}}' > package.json && ./drun -xNM slim node --version | grep 'v7.7.1' # should read version from package.json node:7.7.1-slim image
     - echo '{"test":"passing"}' | ./drun -x stedolan/jq '.test' | grep '"passing"' # should pipe into command inside container
     - echo '{"test":"passing"}' > test.json && ./drun -x stedolan/jq '.test' test.json | grep '"passing"' # should mount current directory
+    - ./drun alpine sh -c 'apk update && apk add checkbashisms && checkbashisms -f drun && echo "checkbashisms passed."'
     - ./drun -?
