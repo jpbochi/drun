@@ -130,8 +130,8 @@ if [ -f '/proc/1/cgroup' ]; then
     EXTRA_OPTS="${EXTRA_OPTS:-} --volumes-from $CURRENT_CONTAINER"
 
     # If current directory is inside any of the mounts of the current container
-    MOUNTS=$(docker inspect --format='{{range .Mounts}} -e '{{.Destination}}'{{end}}' ${CURRENT_CONTAINER})
-    if [ "0" != $(echo "${CURRENT_DIR}" | grep ${MOUNTS}) ]; then
+    MOUNTS=$(docker inspect --format="{{range .Mounts}} -e '{{.Destination}}'{{end}}" ${CURRENT_CONTAINER})
+    if [ "0" != "$(echo "${CURRENT_DIR}" | grep -c ${MOUNTS})" ]; then
       MAP_CURRENT_DIR_OPT=''
     fi
   fi
