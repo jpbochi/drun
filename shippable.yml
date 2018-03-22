@@ -21,3 +21,26 @@ build:
     - echo '{"test":"passing"}' > test.json && ./drun -x stedolan/jq '.test' test.json | grep '"passing"' # should mount current directory
     - ./drun alpine sh -c 'apk update && apk add checkbashisms && checkbashisms -f drun && echo "checkbashisms passed."'
     - ./drun -?
+
+jobs:
+  - name: DOITNOW
+    type: runSh
+    steps:
+      - IN: drun_runCI
+      - TASK:
+          name: wat
+          script:
+            - echo yay
+    on_success:
+      - script: echo "YAAAAAAAAAAAAAAAAAAAAAY SUCCESS"
+    on_failure:
+      - script: echo "YAAAAAAAAAAAAAAAAAAAAAY FAILED"
+    on_cancel:
+      - script: echo "YAAAAAAAAAAAAAAAAAAAAAY CANCEL"
+    always:
+      - script: pwd
+  # - name: DIDIT
+  #   type: release
+  #   steps:
+  #     - IN: doing-it
+  #       switch: off

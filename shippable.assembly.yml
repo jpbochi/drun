@@ -1,0 +1,22 @@
+jobs:
+  - name: DOIT
+    type: runSh
+    steps:
+      - IN: drun_runCI
+      - TASK:
+        name: wat
+        script:
+          - echo yay
+    on_success:
+      - script: echo "YAAAAAAAAAAAAAAAAAAAAAY SUCCESS"
+    on_failure:
+      - script: echo "YAAAAAAAAAAAAAAAAAAAAAY FAILED"
+    on_cancel:
+      - script: echo "YAAAAAAAAAAAAAAAAAAAAAY CANCEL"
+    always:
+      - script: pwd
+  # - name: DIDIT
+  #   type: release
+  #   steps:
+  #     - IN: doing-it
+  #       switch: off
