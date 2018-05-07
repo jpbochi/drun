@@ -1,0 +1,7 @@
+- type: parallel
+  name: examplezz
+  steps:
+    - service: app
+      command: printenv
+    - service: app
+      command: ls
