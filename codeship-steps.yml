@@ -1,9 +1,18 @@
 - type: serial
   name: examplezz
+  service: app
   steps:
-    - service: app
-      command: printenv
-    - service: app
-      command: ls /usr/app/
-    - service: app
-      command: /usr/app/drun -?
+    - command: ./drun -?
+    - command: sh -c "./drun -x ubuntu:16.04 cat /etc/issue | grep 'Ubuntu 16.04'" # should execute command inside container
+    - command: sh -c "./drun -x docker:1.10.0 docker version" # should bind docker.sock
+    - command: sh -c "./drun -x docker:1.10.0 sh -c './drun -x docker:1.10.0 true'" # should do inception in 2 levels
+    - command: sh -c "./drun -x docker:1.10.0 sh -c './drun -x docker:1.10.0 sh -c "./drun -x docker:1.10.0 true"'" # should do inception in 3 levels
+    - command: sh -c "./drun -x mhart/alpine-node:5.12.0 node --version | grep 'v5.12.0'" # should get version of node
+    - command: sh -c "echo '{"engines":{"node":"7.7.1"}}' > package.json && ./drun -xNA node --version | grep 'v7.7.1'" # should read version from package.json
+    - command: sh -c "echo '{"engines":{"node":"~7.7.1"}}' > package.json && ./drun -xNA node --version | grep 'v7.7.1'" # should read version from package.json
+    - command: sh -c "echo '{"engines":{"node":"^7.7.1"}}' > package.json && ./drun -xNA node --version | grep 'v7.7.1'" # should read version from package.json
+    - command: sh -c "echo '{"engines":{"node":">=7.7.1"}}' > package.json && ./drun -xNA node --version | grep 'v7.7.1'" # should read version from package.json
+    - command: sh -c "echo '{"engines":{"node":"7.7.1"}}' > package.json && ./drun -xNM slim node --version | grep 'v7.7.1'" # should read version from package.json node:7.7.1-slim image
+    - command: sh -c "echo '{"test":"passing"}' | ./drun -x stedolan/jq '.test' | grep '"passing"'" # should pipe into command inside container
+    - command: sh -c "echo '{"test":"passing"}' > test.json && ./drun -x stedolan/jq '.test' test.json | grep '"passing"'" # should mount current directory
+    - command: sh -c "checkbashisms -f drun && echo 'checkbashisms passed.'"

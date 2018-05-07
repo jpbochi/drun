@@ -1,4 +1,7 @@
 app:
-  image: docker
+  build: ./codeship/
+  cached: true
+  add_docker: true
+  working_dir: /app
   volumes:
-    - .:/usr/app
+    - .:/app
