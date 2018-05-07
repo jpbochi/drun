@@ -1,7 +1,9 @@
-- type: parallel
+- type: serial
   name: examplezz
   steps:
     - service: app
       command: printenv
     - service: app
-      command: ls
+      command: ls /usr/app/
+    - service: app
+      command: /usr/app/drun -?

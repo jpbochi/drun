@@ -1,2 +1,4 @@
 app:
-  image: drydock/u16
+  image: docker
+  volumes:
+    - .:/usr/app
