@@ -126,6 +126,7 @@ MAP_CURRENT_DIR_OPT="-v $CURRENT_DIR:$CONTAINER_HOME"
 if [ -f '/proc/1/cgroup' ]; then
   CURRENT_CONTAINER=$(grep '/docker/' -- /proc/1/cgroup | head -n1 | cut -d '/' -f 3)
   if [ -n "${CURRENT_CONTAINER}" ]; then
+    docker inspect ${CURRENT_CONTAINER} # DEBUG ONLY
     # Maps volumes from current container
     EXTRA_OPTS="${EXTRA_OPTS:-} --volumes-from $CURRENT_CONTAINER"
 
