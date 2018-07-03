@@ -8,7 +8,9 @@ This tool is a simple wrapper around `docker run` which will mount the current d
 
 If you use [brew](http://brew.sh/), do `brew tap jpbochi/tap && brew install drun`.
 
-If not, clone this repo and do `./install`.
+If not, try `curl -fsSL https://raw.github.com/jpbochi/drun/master/install.sh | bash`.
+
+If you want to install an specific version, try `curl -fsSL https://raw.github.com/jpbochi/drun/master/install.sh | bash -s -- -v 1.2.1`.
 
 ## Suggested aliases
 

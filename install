@@ -1,5 +1,0 @@
-#!/bin/bash
-set -e
-CURRENT_DIR=$(pwd)
-set -x
-ln -fs "$CURRENT_DIR"/drun /usr/local/bin/drun
