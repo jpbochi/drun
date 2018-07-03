@@ -4,7 +4,7 @@ set -euo pipefail
 MV_OPTS="-n"
 [ -t 0 ] && MV_OPTS="-i" # Interactive, prompt before overwrite
 
-while getopts ':v:D:fnx' OPT; do
+while getopts ':v:d:fnx' OPT; do
   case $OPT in
     f) # Don't prompt before overwriting
       MV_OPTS='-f';;
@@ -14,7 +14,7 @@ while getopts ':v:D:fnx' OPT; do
       XTRACE="y";;
     v)
       DRUN_VERSION="$OPTARG";;
-    D)
+    d)
       INSTALL_DIR="$OPTARG";;
     \?)
       echo >&2 "Unknown option -$OPTARG"
