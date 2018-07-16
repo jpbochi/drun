@@ -19,7 +19,8 @@ usage() {
   echo >&2 '  -P                        Mounts your ~/.npm/ into the container (Only useful with node, obviously)'
   echo >&2 '  -E ENV_REGEX              Forwards local env variables whose names match ENV_REGEX to container'
   echo >&2 '  -I image                  Tells which docker image to use, allowing other options to set later'
-  echo >&2 '  -D                        Do not mount /var/run/docker.sock into the container'
+  echo >&2 '  -D                        Do *not* mount /var/run/docker.sock into the container'
+  echo >&2 '  -V delegated|cached       enable volume cache on mount of the current directory (see https://docs.docker.com/docker-for-mac/osxfs-caching/)'
   echo >&2 '  -X SOME_DOCKER_OPTION     Passes option directly to docker (e.g. `drun -X --dns=8.8.8.8` results in `docker run --dns=8.8.8.8 ...`)'
   echo >&2 '  -a|c|e|h|l|m|p|u|v|w VAL  Work exactly like `docker run` options (e.g. `drun -e FOO=bar` results in `docker run -e FOO=bar ...`)'
   exit 0
@@ -50,7 +51,7 @@ node_version() {
 
 CURRENT_DIR=$(pwd)
 CONTAINER_HOME=$CURRENT_DIR
-while getopts ':a:c:e:h:l:m:p:u:v:w:X:E:I:KNM:APxD' OPT; do
+while getopts ':a:c:e:h:l:m:p:u:v:w:X:E:I:KNM:APxDV:' OPT; do
   case $OPT in
     a|c|e|h|l|m|p|u|v|w)
       EXTRA_OPTS="${EXTRA_OPTS:-} -${OPT} ${OPTARG}";;
@@ -87,6 +88,8 @@ while getopts ':a:c:e:h:l:m:p:u:v:w:X:E:I:KNM:APxD' OPT; do
       XTRACE="y";;
     D)
       MOUNTDOCKERSOCK="n";;
+    V)
+      PWD_VOLUME_FLAG=":$OPTARG";;
     \?)
       if [ "$OPTARG" = '?' ]; then
         usage
@@ -121,7 +124,7 @@ if [ -n "${ENV_REGEX:-}" ]; then
   ENV_FILE_OPT="--env-file=$ENV_FILE"
 fi
 
-MAP_CURRENT_DIR_OPT="-v $CURRENT_DIR:$CONTAINER_HOME"
+MAP_CURRENT_DIR_OPT="-v ${CURRENT_DIR}:${CONTAINER_HOME}${PWD_VOLUME_FLAG:-}"
 # Inception detection
 if [ -f '/proc/1/cgroup' ]; then
   CURRENT_CONTAINER=$(grep '/docker/' -- /proc/1/cgroup | head -n1 | cut -d '/' -f 3)
