@@ -69,11 +69,7 @@ while getopts ':a:c:e:h:l:m:p:u:v:w:X:E:I:KNM:APxDV:' OPT; do
         EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npmrc:/usr/etc/npmrc:ro -v $HOME/.npmrc:/usr/local/etc/npmrc:ro"
       fi
       if [ -s "$HOME/.yarnrc" ]; then
-        EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.yarnrc:$CONTAINER_HOME/.yarnrc"
-      fi
-      if [ -s "$HOME/.npmrc" -a -s "$HOME/.yarnrc" -a ! -s .npmrc ]; then
-        # workaround for [Yarn not reading /etc/npmrc while npm does](https://github.com/yarnpkg/yarn/issues/1931)
-        EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npmrc:$CONTAINER_HOME/.npmrc:ro"
+        EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.yarnrc:/usr/etc/yarnrc:ro -v $HOME/.yarnrc:/usr/local/etc/yarnrc:ro"
       fi
       ;;
     M)
