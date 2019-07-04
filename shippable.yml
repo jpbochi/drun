@@ -12,11 +12,12 @@ build:
     - ./drun -x docker:17 sh -c './drun -x docker:17 true' # should do inception in 2 levels
     - ./drun -x docker:17 sh -c './drun -x docker:17 sh -c "./drun -x docker:17 true"' # should do inception in 3 levels
     - ./drun -x mhart/alpine-node:5.12.0 node --version | grep 'v5.12.0' # should get version of node
-    - echo '{"engines":{"node":"7.7.1"}}' > package.json && ./drun -xNA node --version | grep 'v7.7.1' # should read version from package.json
-    - echo '{"engines":{"node":"~7.7.1"}}' > package.json && ./drun -xNA node --version | grep 'v7.7.1' # should read version from package.json
-    - echo '{"engines":{"node":"^7.7.1"}}' > package.json && ./drun -xNA node --version | grep 'v7.7.1' # should read version from package.json
-    - echo '{"engines":{"node":">=7.7.1"}}' > package.json && ./drun -xNA node --version | grep 'v7.7.1' # should read version from package.json
-    - echo '{"engines":{"node":"7.7.1"}}' > package.json && ./drun -xNM slim node --version | grep 'v7.7.1' # should read version from package.json node:7.7.1-slim image
+    # should read version from package.json
+    - echo '{"engines":{"node":"8.14.1"}}' > package.json && ./drun -xNA node --version | grep 'v8.14.1'
+    - echo '{"engines":{"node":"~8.14.1"}}' > package.json && ./drun -xNA node --version | grep 'v8.14.1'
+    - echo '{"engines":{"node":"^8.14.1"}}' > package.json && ./drun -xNA node --version | grep 'v8.14.1'
+    - echo '{"engines":{"node":">=8.14.1"}}' > package.json && ./drun -xNA node --version | grep 'v8.14.1'
+    - echo '{"engines":{"node":"8.14.1"}}' > package.json && ./drun -xNM slim node --version | grep 'v8.14.1' # should read version from package.json node:...-slim image
     - echo '{"test":"passing"}' | ./drun -x stedolan/jq '.test' | grep '"passing"' # should pipe into command inside container
     - echo '{"test":"passing"}' > test.json && ./drun -x stedolan/jq '.test' test.json | grep '"passing"' # should mount current directory
     - ./drun alpine sh -c 'apk update && apk add checkbashisms && checkbashisms -f drun && echo "checkbashisms passed."'
