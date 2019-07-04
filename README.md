@@ -1,4 +1,4 @@
-[![Run Status](https://api.shippable.com/projects/59288d3fb2fff10700c0ceda/badge?branch=master)]() 
+[![Run Status](https://api.shippable.com/projects/59288d3fb2fff10700c0ceda/badge?branch=master)](https://app.shippable.com/github/jpbochi/drun/runs?branchName=master)
 
 # drun
 
