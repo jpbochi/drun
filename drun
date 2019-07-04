@@ -15,7 +15,7 @@ usage() {
   echo >&2 '  -x                        Enables bash xtrace so that exact `docker run` command is displayed'
   echo >&2 '  -N                        Uses node:AUTO image, where AUTO is detected from a local package.json if any (also mounts ~/.npmrc and ~/.yarnrc, if present)'
   echo >&2 '  -M ALT_IMAGE              Prefers node ALT_IMAGE (can be either alpine, wheezy or slim) (e.g., with -NM slim, will resolve to node:AUTO-slim)'
-  echo >&2 '  -A                        Prefers mhart/alpine-node-auto images (e.g., with -NA, will resolve to mhart/alpine-node-auto:AUTO)'
+  echo >&2 '  -A                        Equivalent to `drun -M alpine`'
   echo >&2 '  -P                        Mounts your ~/.npm/ into the container (Only useful with node, obviously)'
   echo >&2 '  -E ENV_REGEX              Forwards local env variables whose names match ENV_REGEX to container'
   echo >&2 '  -I image                  Tells which docker image to use, allowing other options to set later'
@@ -75,7 +75,7 @@ while getopts ':a:c:e:h:l:m:p:u:v:w:X:E:I:KNM:APxDV:' OPT; do
     M)
       NODE_ALT_IMAGE="$OPTARG";;
     A)
-      PREFER_ALPINE="y";;
+      NODE_ALT_IMAGE="alpine";;
     P)
       EXTRA_OPTS="${EXTRA_OPTS:-} -v $CONTAINER_HOME/.npm/_git-remotes"
       EXTRA_OPTS="${EXTRA_OPTS:-} -v $HOME/.npm:$CONTAINER_HOME/.npm"
@@ -104,9 +104,7 @@ if [ -z "${IMAGE:-}" ]; then
   [ -z "$IMAGE" ] && usage
   shift
 fi
-if [ "${PREFER_ALPINE:-}" = 'y' ]; then
-  IMAGE=$(echo "$IMAGE" | sed 's/^node\([:]*\)/mhart\/alpine-node-auto\1/')
-elif [ -n "${NODE_ALT_IMAGE:-}" ]; then
+if [ -n "${NODE_ALT_IMAGE:-}" ]; then
   IMAGE=$(echo "$IMAGE" \
     | sed 's/^node:\([0-9.]*\)$/node:\1-'"${NODE_ALT_IMAGE}"'/' \
     | sed 's/^node:latest$/node:'"${NODE_ALT_IMAGE}"'/' \
