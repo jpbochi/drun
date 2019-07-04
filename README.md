@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/jpbochi/drun.svg?style=svg)](https://circleci.com/gh/jpbochi/drun)
+[![Run Status](https://api.shippable.com/projects/59288d3fb2fff10700c0ceda/badge?branch=master)]() 
 
 # drun
 
