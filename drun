@@ -46,7 +46,7 @@ node_version_raw() {
   fi
 }
 node_version() {
-  node_version_raw | sed 's/^[<>=~^]*//'
+  node_version_raw | sed 's/^[<>=~^ ]*//'
 }
 
 CURRENT_DIR=$(pwd)
