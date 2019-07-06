@@ -35,18 +35,39 @@ node_version_python() {
 node_version_ruby() {
   cat package.json | ruby -e 'require "json"; puts JSON[STDIN.read].fetch("engine",{}).fetch("node","latest")'
 }
-node_version_raw() {
-  if [ ! -f package.json ]; then
+node_version_remote_lts() {
+  local LTS_NAME=$(echo "$1" | sed 's/^lts\///' | sed 's/^[*]$/./')
+  curl -sS https://nodejs.org/dist/index.tab \
+    | sed '1d' | cut -f'1,10' | grep -v '\t-' \
+    | grep -i "$LTS_NAME" | head -n1 | cut -f1 | sed 's/^v//'
+}
+node_version_raw_package_json() {
+  if [ -r .nvmrc ]; then
+    cat .nvmrc
+  elif [ ! -r package.json ]; then
     echo 'latest'
   else
     node_version_jq 2> /dev/null || \
     node_version_python 2> /dev/null || \
     node_version_ruby 2> /dev/null || \
-    (echo >&2 'drun ERR! Failed to resolve node version. Defaulting to "latest"' && echo 'latest')
+    (echo >&2 'drun ERR! Failed to resolve node version from package.json. Defaulting to "latest"' && echo 'latest')
+  fi
+}
+node_version_raw_any_source() {
+  if [ -r .nvmrc ]; then
+    local VERSION=$(cat .nvmrc | sed 's/node/latest/')
+    if echo "$VERSION" | grep -q 'lts'; then
+      node_version_remote_lts "$VERSION" || \
+        (echo >&2 'drun ERR! Failed to resolve node version from .nvmrc. Defaulting to "latest"' && echo 'latest')
+    else
+      echo "$VERSION"
+    fi
+  else
+    node_version_raw_package_json
   fi
 }
 node_version() {
-  node_version_raw | sed 's/^[<>=~^ ]*//'
+  node_version_raw_any_source | sed 's/^[<>=~^ ]*//'
 }
 
 CURRENT_DIR=$(pwd)
