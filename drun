@@ -35,8 +35,10 @@ node_version_python() {
 node_version_ruby() {
   cat package.json | ruby -e 'require "json"; puts JSON[STDIN.read].fetch("engine",{}).fetch("node","latest")'
 }
-node_version_raw() {
-  if [ ! -f package.json ]; then
+node_version_raw_package_json() {
+  if [ -r .nvmrc ]; then
+    cat .nvmrc
+  elif [ ! -r package.json ]; then
     echo 'latest'
   else
     node_version_jq 2> /dev/null || \
@@ -45,8 +47,15 @@ node_version_raw() {
     (echo >&2 'drun ERR! Failed to resolve node version. Defaulting to "latest"' && echo 'latest')
   fi
 }
+node_version_raw_any_source() {
+  if [ -r .nvmrc ]; then
+    cat .nvmrc | sed 's/node/latest/'
+  else
+    node_version_raw_package_json
+  fi
+}
 node_version() {
-  node_version_raw | sed 's/^[<>=~^ ]*//'
+  node_version_raw_any_source | sed 's/^[<>=~^ ]*//'
 }
 
 CURRENT_DIR=$(pwd)
