@@ -13,6 +13,7 @@ build:
     - ./drun -x docker:17 sh -c './drun -x docker:17 sh -c "./drun -x docker:17 true"' # should do inception in 3 levels
     - ./drun -x mhart/alpine-node:5.12.0 node --version | grep 'v5.12.0' # should get version of node
     # should read version from package.json
+    - rm -f .nvmrc package.json
     - echo '{"engines":{"node":"8.14.1"}}' > package.json && ./drun -xNA node --version | grep 'v8.14.1'
     - echo '{"engines":{"node":"~8.14.1"}}' > package.json && ./drun -xNA node --version | grep 'v8.14.1'
     - echo '{"engines":{"node":"^8.14.1"}}' > package.json && ./drun -xNA node --version | grep 'v8.14.1'
